@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEA PIP Weekly Check-In Log</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#1B3A5C;--teal:#2A7F7F;--teal-light:#E6F4F4;--gold:#C9A84C;--gold-light:#FDF6E3;
+    --blue-light:#EAF2FB;--gray-50:#F7F7F5;--gray-100:#EEEDE9;--gray-300:#C8C7C0;
+    --gray-500:#888780;--gray-700:#4A4A46;--gray-900:#1C1C1A;--white:#FFFFFF;
+    --radius-sm:4px;--radius-md:8px;--radius-lg:14px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--gray-50);color:var(--gray-900);min-height:100vh;font-size:15px;line-height:1.6;}
+  .site-header{background:var(--teal);padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.12);}
+  .site-header h1{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--white);font-weight:400;}
+  .header-right{display:flex;align-items:center;gap:.75rem;}
+  .plan-selector{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:var(--white);padding:4px 10px;border-radius:20px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;}
+  .plan-selector option{background:var(--navy);color:var(--white);}
+  .progress-bar{height:3px;background:var(--gray-100);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:0%;transition:width .4s ease;}
+  .container{max-width:780px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+  .intro{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--radius-lg);padding:1.75rem 2rem;margin-bottom:2rem;box-shadow:var(--shadow-sm);}
+  .intro h2{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);font-weight:400;margin-bottom:.4rem;}
+  .intro p{color:var(--gray-500);font-size:13px;line-height:1.65;}
+  .plan-info-bar{background:var(--teal-light);border:1px solid #B0D8D8;border-radius:var(--radius-md);padding:.75rem 1.1rem;margin-top:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .plan-info-bar span{font-size:12px;font-weight:600;color:var(--teal);}
+  .plan-info-bar em{font-size:12px;color:var(--gray-700);font-style:normal;}
+  .how-to{background:var(--blue-light);border-left:3px solid var(--navy);border-radius:0 var(--radius-md) var(--radius-md) 0;padding:.85rem 1.1rem;margin-top:1rem;}
+  .how-to p{font-size:12px;color:var(--navy);font-weight:600;margin-bottom:.3rem;}
+  .how-to li{font-size:12px;color:var(--gray-700);margin-bottom:.2rem;margin-left:1rem;}
+
+  .emp-bar{background:var(--navy);border-radius:var(--radius-lg);padding:1.1rem 1.5rem;margin-bottom:2rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+  .emp-bar label{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:3px;}
+  .emp-bar input,.emp-bar select{width:100%;background:rgba(255,255,255,.1);border:none;border-bottom:1px solid rgba(255,255,255,.2);color:var(--white);padding:4px 0;font-size:13px;font-family:'DM Sans',sans-serif;}
+  .emp-bar input:focus,.emp-bar select:focus{outline:none;border-bottom-color:var(--gold);}
+  .emp-bar input::placeholder{color:rgba(255,255,255,.3);}
+  .emp-bar select option{background:var(--navy);}
+
+  .week-card{background:var(--white);border:1px solid var(--gray-100);border-radius:var(--radius-lg);margin-bottom:1.5rem;overflow:hidden;box-shadow:var(--shadow-sm);}
+  .week-header{padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--gray-100);}
+  .week-header-left{display:flex;align-items:center;gap:.75rem;}
+  .week-num{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+  .week-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+  .status-empty{background:var(--gray-100);color:var(--gray-500);}
+  .status-started{background:var(--gold-light);color:#7A5C1A;}
+  .status-done{background:var(--teal-light);color:var(--teal);}
+  .week-body{padding:1.25rem 1.5rem;}
+  .week-note{font-size:12px;color:var(--gray-500);font-style:italic;margin-bottom:1rem;line-height:1.55;background:var(--gray-50);padding:.65rem .85rem;border-radius:var(--radius-md);border-left:2px solid var(--gray-300);}
+
+  .field{margin-bottom:1rem;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .field textarea,.field input,.field select{width:100%;padding:8px 11px;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--gray-900);background:var(--white);transition:border-color .15s;resize:vertical;}
+  .field textarea{min-height:72px;}
+  .field textarea:focus,.field input:focus,.field select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(42,127,127,0.1);}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+  @media(max-width:560px){.two-col{grid-template-columns:1fr;}.emp-bar{grid-template-columns:1fr;}}
+
+  .lea-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1rem;}
+  @media(max-width:600px){.lea-row{grid-template-columns:1fr;}}
+  .lea-box{background:var(--gray-50);border-radius:var(--radius-md);padding:.75rem;border:1px solid var(--gray-100);}
+  .lea-box-title{font-size:11px;font-weight:700;margin-bottom:.25rem;}
+  .lea-box-prompt{font-size:11px;color:var(--gray-500);font-style:italic;margin-bottom:.5rem;line-height:1.45;}
+  .lea-box textarea{width:100%;border:1px solid var(--gray-300);border-radius:var(--radius-sm);padding:6px 8px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:60px;background:var(--white);}
+  .lea-box textarea:focus{outline:none;border-color:var(--teal);}
+
+  .divider{border:none;border-top:1px solid var(--gray-100);margin:1rem 0;}
+
+  .goal-check-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:var(--radius-md);margin-bottom:.5rem;background:var(--gray-50);border:1px solid var(--gray-100);}
+  .goal-check-row select{flex-shrink:0;width:140px;padding:5px 8px;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:12px;font-family:'DM Sans',sans-serif;}
+  .goal-check-row input{flex:1;border:1px solid var(--gray-300);border-radius:var(--radius-md);padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;}
+  .goal-label{font-size:12px;font-weight:500;color:var(--navy);min-width:55px;}
+
+  .btn-generate{width:100%;padding:13px;background:var(--navy);color:var(--white);border:none;border-radius:var(--radius-md);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:1.5rem;transition:background .15s;}
+  .btn-generate:hover{background:var(--teal);}
+
+  .output-panel{display:none;background:var(--white);border:1px solid var(--gray-100);border-radius:var(--radius-lg);margin-top:2rem;overflow:hidden;box-shadow:var(--shadow-md);}
+  .output-header{background:var(--navy);padding:1.1rem 1.5rem;}
+  .output-header h3{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--white);font-weight:400;}
+  .output-header p{font-size:12px;color:rgba(255,255,255,.5);margin-top:.2rem;}
+  .output-body{padding:1.5rem;}
+  .out-week{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--gray-100);}
+  .out-week:last-child{border-bottom:none;margin-bottom:0;}
+  .out-week-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin-bottom:.75rem;}
+  .out-field{margin-bottom:.75rem;}
+  .out-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-500);margin-bottom:.2rem;}
+  .out-value{font-size:13px;color:var(--gray-900);line-height:1.6;background:var(--gray-50);border-left:2px solid var(--gray-300);padding:.5rem .75rem;border-radius:0 var(--radius-md) var(--radius-md) 0;white-space:pre-wrap;}
+  .btn-row{display:flex;gap:.75rem;margin-top:1rem;}
+  .btn-secondary{padding:9px 18px;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--white);color:var(--gray-700);transition:all .15s;}
+  .btn-secondary:hover{background:var(--gray-50);border-color:var(--navy);}
+
+  .goal-full-row{border:1px solid var(--gray-100);border-radius:var(--radius-md);overflow:hidden;margin-top:.5rem;}
+  .goal-full-header{display:grid;grid-template-columns:80px 120px 1fr;gap:0;background:var(--navy);padding:6px 10px;}
+  .goal-full-header span{font-size:10px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;}
+  .goal-full-body{display:grid;grid-template-columns:80px 120px 1fr;gap:8px;padding:8px 10px;border-top:1px solid var(--gray-100);align-items:start;}
+  .goal-full-body:nth-child(even){background:var(--gray-50);}
+  .goal-full-body select{padding:5px 7px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;}
+  .goal-full-body textarea{padding:5px 7px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:36px;}
+
+  .check-block{border-radius:var(--radius-lg);margin-bottom:1.5rem;overflow:hidden;box-shadow:var(--shadow-sm);}
+  .mini-check{border:2px solid var(--gold);}
+  .full-check{border:2px solid var(--navy);}
+  .check-block-header{padding:.85rem 1.5rem;display:flex;align-items:center;gap:.75rem;}
+  .mini-check .check-block-header{background:var(--gold-light);}
+  .full-check .check-block-header{background:#E8EDF3;}
+  .check-block-header.full{background:#E8EDF3;}
+  .check-badge{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+  .check-badge.gold{background:var(--gold);color:var(--white);}
+  .check-badge.navy{background:var(--navy);color:var(--white);}
+  .check-block-title{font-size:14px;font-weight:600;color:var(--navy);}
+  .check-block-body{padding:1.25rem 1.5rem;background:var(--white);}
+
+  .traffic-row{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.4rem;}
+  .traffic-opt{display:flex;align-items:center;gap:.4rem;cursor:pointer;}
+  .traffic-opt.sm{margin-right:.5rem;}
+  .traffic{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;}
+  .traffic.green{background:#E8F5EF;color:#2E7D5E;border:1px solid #A8D5C2;}
+  .traffic.yellow{background:var(--gold-light);color:#7A5C1A;border:1px solid var(--gold);}
+  .traffic.red{background:#FDF0EE;color:#C0392B;border:1px solid #E8B4AE;}
+  .traffic.sm{font-size:11px;padding:3px 9px;}
+
+  .outcome-opts{display:flex;flex-direction:column;gap:.6rem;margin-top:.4rem;}
+  .outcome-opt{display:flex;align-items:flex-start;gap:.6rem;padding:.75rem 1rem;border-radius:var(--radius-md);font-size:13px;cursor:pointer;border:1px solid var(--gray-100);}
+  .outcome-opt input{margin-top:2px;flex-shrink:0;}
+  .green-opt{background:#E8F5EF;border-color:#A8D5C2;color:#2E7D5E;font-weight:500;}
+  .yellow-opt{background:var(--gold-light);border-color:var(--gold);color:#7A5C1A;font-weight:500;}
+  .red-opt{background:#FDF0EE;border-color:#E8B4AE;color:#C0392B;font-weight:500;}
+
+  @media(max-width:560px){.goal-full-header,.goal-full-body{grid-template-columns:1fr;}}
+
+  @media print{
+    .site-header,.intro,.emp-bar,.week-card,.check-block,.btn-generate,.btn-row{display:none!important;}
+    .output-panel{display:block!important;box-shadow:none;border:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>LEA PIP Weekly Check-In Log</h1>
+  <div class="header-right">
+    <select class="plan-selector" id="plan-length-selector" onchange="setPlanLength(this.value)">
+      <option value="">Select plan length</option>
+      <option value="30">30-Day Plan</option>
+      <option value="60">60-Day Plan</option>
+      <option value="90">90-Day Plan</option>
+    </select>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<div class="container">
+
+  <div class="intro">
+    <h2>Do Phase — Weekly Manager Log</h2>
+    <p>This is your working document for the execution phase of the PIP. Fill it in each week after your check-in. It is not shared with the employee. Select your plan length above to see the right number of weeks.</p>
+    <div class="plan-info-bar" id="plan-info-bar" style="display:none">
+      <span id="plan-info-title">Plan length:</span>
+      <em id="plan-info-detail"></em>
+    </div>
+    <div class="how-to">
+      <p>How to use this</p>
+      <ul>
+        <li>Select your plan length (30, 60, or 90 days) above</li>
+        <li>Complete one section per week, immediately after each check-in</li>
+        <li>Use LEA — listen first, empathize before solutions, ask curious questions</li>
+        <li>Document what you observed, not what you interpreted</li>
+        <li>Click Generate Summary when complete</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="emp-bar">
+    <div><label>Employee name</label><input id="b-emp" type="text" placeholder="Full name"></div>
+    <div><label>Manager name</label><input id="b-mgr" type="text" placeholder="Full name"></div>
+    <div><label>Plan start date</label><input id="b-start" type="date"></div>
+    <div><label>Plan type</label><input id="b-type" type="text" placeholder="Auto-filled when you select above" readonly></div>
+  </div>
+
+  <div id="weeks-container"></div>
+  <div id="generate-row" style="display:none">
+    <button class="btn-generate" onclick="generateSummary()">Generate Check-In Summary →</button>
+  </div>
+
+  <div class="output-panel" id="output-panel">
+    <div class="output-header">
+      <h3>Do Phase Check-In Summary</h3>
+      <p>Transfer to the formal PIP record or retain in the personnel file.</p>
+    </div>
+    <div class="output-body" id="output-body"></div>
+    <div style="padding:0 1.5rem 1.5rem">
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Week definitions per plan length
+  var PLAN_CONFIGS = {
+    '30': {
+      label: '30-Day Plan',
+      detail: '4 weekly check-ins over 30 days',
+      weeks: [
+        { num:1, label:'Week 1 — Initiation', color:'#1B3A5C', bg:'#E8EDF3', note:'First check-in after the PIP is initiated. Your primary goal is to listen. How is the employee responding to the plan? What are you observing in terms of engagement and early effort?', ll:'Did the employee speak first? What key themes did you hear?', le:'How did you acknowledge their perspective before moving to solutions?', la:'What question opened the conversation and what did it reveal?' },
+        { num:2, label:'Week 2 — Early Progress', color:'#2A6B6B', bg:'#E1F0F0', note:'Look for early wins and acknowledge them. Progress in week 2 tells you whether the employee is genuinely engaging with the plan. Document what you see, not what you expected.', ll:'What did the employee share about how week 1 went for them?', le:'Did you acknowledge any early progress before addressing gaps?', la:'What did you ask to understand how they feel about the plan?' },
+        { num:3, label:'Week 3 — Mid-Point Check', color:'#7A5C1A', bg:'#FDF6E3', note:'You are halfway through. Are the goals still fair and achievable given what you have learned? If something needs to shift, document it now.', ll:'What did the employee say about their progress and obstacles?', le:'Have you acknowledged both progress and effort, not just outcomes?', la:'What curious question helped you understand what is really going on?' },
+        { num:4, label:'Week 4 — Final Review', color:'#1B3A5C', bg:'#E8EDF3', note:'Final documentation before the outcome decision. What changed from Week 1 to now? What held? What did you learn through this process?', ll:'What did the employee say about how the overall process felt for them?', le:'Did the employee leave feeling treated with dignity, regardless of outcome?', la:'What was the most important question you asked over the full plan?' }
+      ]
+    },
+    '60': {
+      label: '60-Day Plan',
+      detail: '8 weekly check-ins over 60 days',
+      weeks: [
+        { num:1, label:'Week 1 — Initiation', color:'#1B3A5C', bg:'#E8EDF3', note:'First check-in after the PIP is initiated. Listen first. How is the employee responding? What are you observing in terms of engagement and early effort?', ll:'Did the employee speak first? What key themes did you hear?', le:'How did you acknowledge their perspective before moving to solutions?', la:'What question opened the conversation and what did it reveal?' },
+        { num:2, label:'Week 2 — Early Signals', color:'#2A6B6B', bg:'#E1F0F0', note:'Early signals about engagement and effort. Look for wins and acknowledge them. Document what you see, not what you expected.', ll:'What did the employee share about how week 1 went for them?', le:'Did you acknowledge early progress before addressing gaps?', la:'What did you ask to understand how they feel about the plan?' },
+        { num:3, label:'Week 3 — Observation', color:'#5C3D1B', bg:'#F5EDE4', note:'Factual observations about progress against each goal. Are there obstacles that need addressing? Is your support commitment holding up?', ll:'What did the employee raise when you listened first?', le:'Have you acknowledged effort alongside outcomes?', la:'What question helped you understand root causes of any gaps?' },
+        { num:4, label:'Week 4 — Mid-Point', color:'#7A5C1A', bg:'#FDF6E3', note:'You are at the halfway mark. Are the goals still fair and achievable? Does anything in the plan need to shift based on what you have learned?', ll:'What did the employee say about progress and how the plan feels?', le:'Did the mid-point conversation feel collaborative or evaluative?', la:'What question gave you the clearest picture of where they stand?' },
+        { num:5, label:'Week 5 — Trend Assessment', color:'#2A7F7F', bg:'#E6F4F4', note:'What is the trend — improving, plateauing, or declining? Are your support commitments still holding up? Document what you see.', ll:'What did the employee share this week?', le:'Have you acknowledged the trend — positive or negative — honestly?', la:'What question helped you understand the trajectory?' },
+        { num:6, label:'Week 6 — Observation', color:'#1B3A5C', bg:'#E8EDF3', note:'Factual observations entering the final stretch. Are there any last obstacles that need addressing before the formal assessment?', ll:'What did the employee raise at this stage?', le:'How did you respond to any concerns or setbacks shared?', la:'What question opened the most honest conversation yet?' },
+        { num:7, label:'Week 7 — Pre-Final Review', color:'#5C3D1B', bg:'#F5EDE4', note:'One week out from the final review. Where does the employee stand against each goal? Are there any last adjustments needed before the formal outcome?', ll:'What did the employee share about heading into the final week?', le:'Have you set clear expectations for the final review in a fair way?', la:'What question gave you the clearest picture of the outcome?' },
+        { num:8, label:'Week 8 — Final Review', color:'#1B3A5C', bg:'#E8EDF3', note:'Final documentation before the outcome decision. What changed from Week 1 to now? What held? What did you learn through this process?', ll:'What did the employee say about how the overall process felt for them?', le:'Did the employee leave feeling treated with dignity, regardless of outcome?', la:'What was the most important question you asked over the full plan?' }
+      ]
+    },
+    '90': {
+      label: '90-Day Plan',
+      detail: '12 weekly check-ins over 90 days',
+      weeks: [
+        { num:1, label:'Week 1 — Initiation', color:'#1B3A5C', bg:'#E8EDF3', note:'First check-in after the PIP is initiated. Listen first. How is the employee responding to the plan?', ll:'Did the employee speak first? What key themes did you hear?', le:'How did you acknowledge their perspective?', la:'What question opened the conversation?' },
+        { num:2, label:'Week 2 — Early Signals', color:'#2A6B6B', bg:'#E1F0F0', note:'Early signals about engagement. Look for wins and acknowledge them. Document what you see.', ll:'What did the employee share about week 1?', le:'Did you acknowledge early progress before addressing gaps?', la:'What question helped you understand how they feel about the plan?' },
+        { num:3, label:'Week 3 — Observation', color:'#5C3D1B', bg:'#F5EDE4', note:'Factual observations about early progress. Are obstacles surfacing that need addressing?', ll:'What did the employee raise when you listened first?', le:'Have you acknowledged effort alongside outcomes?', la:'What question helped you understand root causes?' },
+        { num:4, label:'Week 4 — First Month Check', color:'#7A5C1A', bg:'#FDF6E3', note:'End of the first month. Are the goals still fair and achievable? Is your support commitment holding up?', ll:'What did the employee say about their first month experience?', le:'Did the conversation feel collaborative or evaluative?', la:'What question gave you the clearest picture at this stage?' },
+        { num:5, label:'Week 5 — Trend Assessment', color:'#2A7F7F', bg:'#E6F4F4', note:'What is the trend entering month 2 — improving, plateauing, or declining? Document what you observe.', ll:'What did the employee share this week?', le:'Have you acknowledged the trend honestly with the employee?', la:'What question helped you understand the trajectory?' },
+        { num:6, label:'Week 6 — Mid-Point', color:'#1B3A5C', bg:'#E8EDF3', note:'You are at the halfway mark of a 90-day plan. Does anything need to shift based on what you have learned? This is the right moment to adjust.', ll:'What did the employee say about progress and how the plan feels at mid-point?', le:'Did the mid-point conversation feel fair and balanced?', la:'What question opened the most honest conversation so far?' },
+        { num:7, label:'Week 7 — Observation', color:'#5C3D1B', bg:'#F5EDE4', note:'Factual observations entering the final stretch. Are the goals still the right goals?', ll:'What did the employee raise at this stage?', le:'How did you respond to any concerns or setbacks?', la:'What question helped you understand where they truly stand?' },
+        { num:8, label:'Week 8 — Trend Check', color:'#7A5C1A', bg:'#FDF6E3', note:'With one month remaining, what is the overall trend? Are there any obstacles that need resolving before the final push?', ll:'What did the employee share about the overall experience so far?', le:'Have you acknowledged their effort over the full plan period?', la:'What question gave you the best picture of the path to the finish?' },
+        { num:9, label:'Week 9 — Observation', color:'#2A7F7F', bg:'#E6F4F4', note:'Three weeks from the final review. What are you observing? Are there any last supports needed?', ll:'What did the employee say at this stage?', le:'Did you acknowledge progress before addressing remaining gaps?', la:'What question opened the conversation this week?' },
+        { num:10, label:'Week 10 — Pre-Final Prep', color:'#1B3A5C', bg:'#E8EDF3', note:'Two weeks out. Where does the employee stand against each goal? Set clear expectations for the final review.', ll:'What did the employee share about heading into the final two weeks?', le:'Have you set expectations for the outcome conversation in a fair way?', la:'What question gave you the clearest picture of the outcome?' },
+        { num:11, label:'Week 11 — Final Observation', color:'#5C3D1B', bg:'#F5EDE4', note:'One week out from the final review. Last documentation of observations before the formal outcome decision.', ll:'What did the employee say in the final check-in before the review?', le:'Did the employee feel heard and fairly evaluated at this stage?', la:'What question revealed the most important truth about this plan?' },
+        { num:12, label:'Week 12 — Final Review', color:'#1B3A5C', bg:'#E8EDF3', note:'Final documentation before the outcome decision. What changed from Week 1 to now? What held? What did you learn?', ll:'What did the employee say about how the overall process felt for them?', le:'Did the employee leave feeling treated with dignity, regardless of outcome?', la:'What was the most important question you asked over the full 90 days?' }
+      ]
+    }
+  };
+
+  var currentPlan = null;
+
+  function setPlanLength(val) {
+    if (!val) return;
+    currentPlan = PLAN_CONFIGS[val];
+    document.getElementById('b-type').value = currentPlan.label;
+    document.getElementById('plan-info-bar').style.display = 'flex';
+    document.getElementById('plan-info-title').textContent = currentPlan.label + ':';
+    document.getElementById('plan-info-detail').textContent = currentPlan.detail;
+    buildWeeks(currentPlan.weeks);
+    document.getElementById('generate-row').style.display = 'block';
+    document.getElementById('output-panel').style.display = 'none';
+  }
+
+  function buildWeeks(weeks) {
+    var container = document.getElementById('weeks-container');
+    container.innerHTML = '';
+
+    // Determine cadence based on plan length
+    var totalWeeks = weeks.length;
+    var miniCheckWeeks = [];
+    var fullCheckWeeks = [];
+
+    if (totalWeeks === 4) {
+      // 30-day: mini after W2, full after W4 (but W2 is also "mid" so full at W2 and W4)
+      fullCheckWeeks = [2, 4];
+    } else if (totalWeeks === 8) {
+      miniCheckWeeks = [2, 6];
+      fullCheckWeeks = [4, 8];
+    } else if (totalWeeks === 12) {
+      miniCheckWeeks = [2, 4, 8, 10];
+      fullCheckWeeks = [6, 12];
+    }
+
+    weeks.forEach(function(w, idx) {
+      // Build week card
+      var div = document.createElement('div');
+      div.className = 'week-card';
+      div.id = 'week-card-' + w.num;
+      div.innerHTML =
+        '<div class="week-header" onclick="toggleWeek(' + w.num + ')">' +
+          '<div class="week-header-left"><span class="week-num" style="background:' + w.bg + ';color:' + w.color + '">' + w.label + '</span></div>' +
+          '<span class="week-status status-empty" id="status-' + w.num + '">Not started</span>' +
+        '</div>' +
+        '<div class="week-body" id="week-body-' + w.num + '" style="display:' + (idx === 0 ? 'block' : 'none') + '">' +
+          '<p class="week-note">' + w.note + '</p>' +
+          '<div class="two-col">' +
+            '<div class="field"><label>Check-in date</label><input type="date" id="w' + w.num + '-date" onchange="updateStatus(' + w.num + ')"></div>' +
+            '<div class="field"><label>Check-in format</label><select id="w' + w.num + '-format" oninput="updateStatus(' + w.num + ')">' +
+              '<option value="">Select format...</option>' +
+              '<option value="In-person 1:1">In-person 1:1</option>' +
+              '<option value="Video call">Video call</option>' +
+              '<option value="Phone call">Phone call</option>' +
+              '<option value="Written / async">Written / async</option>' +
+              '<option value="Formal review meeting">Formal review meeting</option>' +
+              '<option value="Walking 1:1">Walking 1:1</option>' +
+            '</select></div>' +
+          '</div>' +
+          '<div class="lea-row">' +
+            '<div class="lea-box"><div class="lea-box-title" style="color:' + w.color + '">L — Listen</div><div class="lea-box-prompt">' + w.ll + '</div><textarea id="w' + w.num + '-listen" placeholder="What did you hear?" oninput="updateStatus(' + w.num + ');updateProgress()"></textarea></div>' +
+            '<div class="lea-box"><div class="lea-box-title" style="color:' + w.color + '">E — Empathize</div><div class="lea-box-prompt">' + w.le + '</div><textarea id="w' + w.num + '-empathize" placeholder="How did you respond?" oninput="updateStatus(' + w.num + ')"></textarea></div>' +
+            '<div class="lea-box"><div class="lea-box-title" style="color:' + w.color + '">A — Ask</div><div class="lea-box-prompt">' + w.la + '</div><textarea id="w' + w.num + '-ask" placeholder="What did your question reveal?" oninput="updateStatus(' + w.num + ')"></textarea></div>' +
+          '</div>' +
+          '<hr class="divider">' +
+          '<div class="field"><label>Factual observations — behavior and output only, not interpretation</label><textarea id="w' + w.num + '-obs" placeholder="e.g. On [date], [Employee] completed X. On [date], Y did not happen. Stick to what you can point to with evidence." oninput="updateStatus(' + w.num + ');updateProgress()"></textarea></div>' +
+          '<div class="field"><label>Goal progress this week</label>' +
+            '<div class="goal-check-row"><span class="goal-label">Goal 1</span><select id="w' + w.num + '-g1s"><option value="">Status...</option><option>On track</option><option>Needs attention</option><option>Met</option><option>Not met</option></select><input type="text" id="w' + w.num + '-g1n" placeholder="Evidence or notes..."></div>' +
+            '<div class="goal-check-row"><span class="goal-label">Goal 2</span><select id="w' + w.num + '-g2s"><option value="">Status...</option><option>On track</option><option>Needs attention</option><option>Met</option><option>Not met</option></select><input type="text" id="w' + w.num + '-g2n" placeholder="Evidence or notes..."></div>' +
+            '<div class="goal-check-row"><span class="goal-label">Goal 3</span><select id="w' + w.num + '-g3s"><option value="">Status...</option><option>On track</option><option>Needs attention</option><option>Met</option><option>Not met</option></select><input type="text" id="w' + w.num + '-g3n" placeholder="Evidence or notes..."></div>' +
+          '</div>' +
+          '<div class="field"><label>Obstacles raised by the employee this week</label><textarea id="w' + w.num + '-obstacles" placeholder="Document in the employee\'s words. If an obstacle requires action, note what you did about it." oninput="updateStatus(' + w.num + ')"></textarea></div>' +
+          '<div class="field"><label>Manager follow-through — did you hold up your commitments this week?</label><textarea id="w' + w.num + '-commit" placeholder="Were your commitments from the plan fulfilled this week? If not, what happened and how did you address it?" oninput="updateStatus(' + w.num + ')"></textarea></div>' +
+        '</div>';
+      container.appendChild(div);
+
+      // After even weeks — insert Check and Reassess blocks
+      if (miniCheckWeeks.indexOf(w.num) !== -1) {
+        container.appendChild(buildMiniCheck(w.num));
+      } else if (fullCheckWeeks.indexOf(w.num) !== -1) {
+        var isFinal = fullCheckWeeks.indexOf(w.num) === fullCheckWeeks.length - 1;
+        container.appendChild(buildFullCheck(w.num, isFinal));
+      }
+    });
+  }
+
+  function buildMiniCheck(afterWeek) {
+    var div = document.createElement('div');
+    div.className = 'check-block mini-check';
+    div.id = 'check-mini-' + afterWeek;
+    div.innerHTML =
+      '<div class="check-block-header">' +
+        '<span class="check-badge gold">CHECK + REASSESS</span>' +
+        '<span class="check-block-title">2-Week Pulse — After Week ' + afterWeek + '</span>' +
+      '</div>' +
+      '<div class="check-block-body">' +
+        '<p class="week-note">Quick pulse on where things stand. Rate each goal and answer the two reassess questions. If anything is yellow or red, flag it before moving into the next two weeks.</p>' +
+        '<div class="field"><label>Overall trend at Week ' + afterWeek + '</label>' +
+          '<div class="traffic-row">' +
+            '<label class="traffic-opt"><input type="radio" name="trend-' + afterWeek + '" value="green"> <span class="traffic green">On track</span></label>' +
+            '<label class="traffic-opt"><input type="radio" name="trend-' + afterWeek + '" value="yellow"> <span class="traffic yellow">Needs attention</span></label>' +
+            '<label class="traffic-opt"><input type="radio" name="trend-' + afterWeek + '" value="red"> <span class="traffic red">At risk</span></label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field"><label>Goal ratings</label>' +
+          '<div class="goal-check-row"><span class="goal-label">Goal 1</span>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g1-mini-' + afterWeek + '" value="green"> <span class="traffic sm green">On track</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g1-mini-' + afterWeek + '" value="yellow"> <span class="traffic sm yellow">Attention</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g1-mini-' + afterWeek + '" value="red"> <span class="traffic sm red">At risk</span></label>' +
+          '</div>' +
+          '<div class="goal-check-row"><span class="goal-label">Goal 2</span>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g2-mini-' + afterWeek + '" value="green"> <span class="traffic sm green">On track</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g2-mini-' + afterWeek + '" value="yellow"> <span class="traffic sm yellow">Attention</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g2-mini-' + afterWeek + '" value="red"> <span class="traffic sm red">At risk</span></label>' +
+          '</div>' +
+          '<div class="goal-check-row"><span class="goal-label">Goal 3</span>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g3-mini-' + afterWeek + '" value="green"> <span class="traffic sm green">On track</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g3-mini-' + afterWeek + '" value="yellow"> <span class="traffic sm yellow">Attention</span></label>' +
+            '<label class="traffic-opt sm"><input type="radio" name="g3-mini-' + afterWeek + '" value="red"> <span class="traffic sm red">At risk</span></label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="field"><label>What needs to change in the next 2 weeks based on what you have seen?</label><textarea id="mini-change-' + afterWeek + '" placeholder="Be specific. If a goal is yellow or red, what exactly will you do differently?"></textarea></div>' +
+        '<div class="field"><label>Does the plan still need to run as written, or does anything need to shift?</label>' +
+          '<select id="mini-reassess-' + afterWeek + '">' +
+            '<option value="">Select...</option>' +
+            '<option value="Plan continues as written">Plan continues as written</option>' +
+            '<option value="Goals need adjustment — documenting change">Goals need adjustment — documenting change</option>' +
+            '<option value="Support plan needs updating">Support plan needs updating</option>' +
+            '<option value="Escalation needed — consulting HR">Escalation needed — consulting HR</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="field"><label>Notes for HR (optional)</label><textarea id="mini-hr-' + afterWeek + '" placeholder="Anything HR should know at this stage?"></textarea></div>' +
+      '</div>';
+    return div;
+  }
+
+  function buildFullCheck(afterWeek, isFinal) {
+    var label = isFinal ? 'FINAL CHECK + REASSESS' : 'MID-POINT CHECK + REASSESS';
+    var title = isFinal ? 'Final Review — After Week ' + afterWeek : 'Mid-Point Review — After Week ' + afterWeek;
+    var note = isFinal
+      ? 'This is the final formal check before the outcome decision. Rate every goal with evidence, complete the reassess outcome selection, and document your rationale. This feeds directly into the formal PIP record.'
+      : 'Mid-point formal review. Rate every goal against the agreed metric — not impressions. Reassess whether the plan is still working and whether any adjustments are needed before the final stretch.';
+
+    var div = document.createElement('div');
+    div.className = 'check-block full-check';
+    div.id = 'check-full-' + afterWeek;
+    div.innerHTML =
+      '<div class="check-block-header full">' +
+        '<span class="check-badge navy">' + label + '</span>' +
+        '<span class="check-block-title">' + title + '</span>' +
+      '</div>' +
+      '<div class="check-block-body">' +
+        '<p class="week-note">' + note + '</p>' +
+
+        '<div class="field"><label>Overall trend</label>' +
+          '<div class="traffic-row">' +
+            '<label class="traffic-opt"><input type="radio" name="full-trend-' + afterWeek + '" value="green"> <span class="traffic green">On track</span></label>' +
+            '<label class="traffic-opt"><input type="radio" name="full-trend-' + afterWeek + '" value="yellow"> <span class="traffic yellow">Needs attention</span></label>' +
+            '<label class="traffic-opt"><input type="radio" name="full-trend-' + afterWeek + '" value="red"> <span class="traffic red">At risk</span></label>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="field"><label>Goal progress — rate each goal and add specific evidence</label>' +
+          '<div class="goal-full-row">' +
+            '<div class="goal-full-header"><span>Goal</span><span>Status</span><span>Evidence (specific, dated, factual)</span></div>' +
+            '<div class="goal-full-body"><span class="goal-label">Goal 1</span><select id="full-g1s-' + afterWeek + '"><option value="">Select...</option><option>Met</option><option>Partially Met</option><option>Not Met</option></select><textarea id="full-g1n-' + afterWeek + '" placeholder="Evidence..."></textarea></div>' +
+            '<div class="goal-full-body"><span class="goal-label">Goal 2</span><select id="full-g2s-' + afterWeek + '"><option value="">Select...</option><option>Met</option><option>Partially Met</option><option>Not Met</option></select><textarea id="full-g2n-' + afterWeek + '" placeholder="Evidence..."></textarea></div>' +
+            '<div class="goal-full-body"><span class="goal-label">Goal 3</span><select id="full-g3s-' + afterWeek + '"><option value="">Select...</option><option>Met</option><option>Partially Met</option><option>Not Met</option></select><textarea id="full-g3n-' + afterWeek + '" placeholder="Evidence..."></textarea></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="field"><label>What changed from the start of the plan to this point?</label><textarea id="full-changed-' + afterWeek + '" placeholder="What improved? What stayed the same? What got worse? Be specific."></textarea></div>' +
+        '<div class="field"><label>What did the LEA conversations reveal that informed this assessment?</label><textarea id="full-lea-' + afterWeek + '" placeholder="How did listening, empathizing, and asking curious questions change what you know about this employee and this situation?"></textarea></div>' +
+
+        (isFinal ?
+        '<div class="field"><label>Outcome decision</label>' +
+          '<div class="outcome-opts">' +
+            '<label class="outcome-opt green-opt"><input type="radio" name="outcome-' + afterWeek + '" value="completed"> Plan Successfully Completed — Employee met all goals.</label>' +
+            '<label class="outcome-opt yellow-opt"><input type="radio" name="outcome-' + afterWeek + '" value="extended"> Plan Extended — Partial progress warrants additional time.</label>' +
+            '<label class="outcome-opt red-opt"><input type="radio" name="outcome-' + afterWeek + '" value="action"> Further Action Required — Goals not met. Escalate per policy.</label>' +
+          '</div>' +
+        '</div>' : '') +
+
+        '<div class="field"><label>' + (isFinal ? 'Rationale for outcome decision' : 'Rationale for mid-point assessment') + '</label><textarea id="full-rationale-' + afterWeek + '" placeholder="Connect your decision to specific evidence — not impressions. Reference goal ratings and LEA conversation notes."></textarea></div>' +
+        '<div class="field"><label>Next steps</label><textarea id="full-next-' + afterWeek + '" placeholder="' + (isFinal ? 'What happens after this decision — for the employee, manager, and HR?' : 'What adjustments, if any, are being made to the plan going forward?') + '"></textarea></div>' +
+        '<div class="field"><label>HR notes</label><textarea id="full-hr-' + afterWeek + '" placeholder="Anything HR should know at this stage? Flag anything that needs review before proceeding."></textarea></div>' +
+      '</div>';
+    return div;
+  }
+
+  function toggleWeek(num) {
+    if (!currentPlan) return;
+    currentPlan.weeks.forEach(function(w) {
+      var body = document.getElementById('week-body-' + w.num);
+      if (body) body.style.display = w.num === num ? 'block' : 'none';
+    });
+  }
+
+  function v(id) { var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; }
+
+  function updateStatus(num) {
+    var key = v('w' + num + '-obs') || v('w' + num + '-listen');
+    var date = v('w' + num + '-date');
+    var el = document.getElementById('status-' + num);
+    if (!el) return;
+    if (key && date) { el.textContent = 'Complete'; el.className = 'week-status status-done'; }
+    else if (key || date) { el.textContent = 'In progress'; el.className = 'week-status status-started'; }
+    else { el.textContent = 'Not started'; el.className = 'week-status status-empty'; }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    if (!currentPlan) return;
+    var done = currentPlan.weeks.filter(function(w) { return v('w' + w.num + '-obs') && v('w' + w.num + '-date'); }).length;
+    document.getElementById('progress-fill').style.width = Math.round((done / currentPlan.weeks.length) * 100) + '%';
+  }
+
+  function getRadio(name) {
+    var sel = document.querySelector('input[name="' + name + '"]:checked');
+    return sel ? sel.value : '';
+  }
+
+  function generateSummary() {
+    if (!currentPlan) return;
+    var totalWeeks = currentPlan.weeks.length;
+    var miniCheckWeeks = [];
+    var fullCheckWeeks = [];
+    if (totalWeeks === 4) { fullCheckWeeks = [2, 4]; }
+    else if (totalWeeks === 8) { miniCheckWeeks = [2, 6]; fullCheckWeeks = [4, 8]; }
+    else if (totalWeeks === 12) { miniCheckWeeks = [2, 4, 8, 10]; fullCheckWeeks = [6, 12]; }
+
+    var html = '<div style="margin-bottom:1rem;padding:.75rem 1rem;background:var(--blue-light);border-radius:var(--radius-md);font-size:13px;">';
+    html += '<strong style="color:var(--navy)">Employee:</strong> ' + (v('b-emp') || '[Not entered]') + ' &nbsp;|&nbsp; ';
+    html += '<strong style="color:var(--navy)">Manager:</strong> ' + (v('b-mgr') || '[Not entered]') + ' &nbsp;|&nbsp; ';
+    html += '<strong style="color:var(--navy)">Plan start:</strong> ' + (v('b-start') || '[Not entered]') + ' &nbsp;|&nbsp; ';
+    html += '<strong style="color:var(--navy)">Plan type:</strong> ' + currentPlan.label;
+    html += '</div>';
+
+    currentPlan.weeks.forEach(function(w) {
+      var date = v('w' + w.num + '-date');
+      var format = v('w' + w.num + '-format');
+      var listen = v('w' + w.num + '-listen');
+      var empathize = v('w' + w.num + '-empathize');
+      var ask = v('w' + w.num + '-ask');
+      var obs = v('w' + w.num + '-obs');
+      var obstacles = v('w' + w.num + '-obstacles');
+      var commit = v('w' + w.num + '-commit');
+      var g1s = v('w' + w.num + '-g1s'); var g1n = v('w' + w.num + '-g1n');
+      var g2s = v('w' + w.num + '-g2s'); var g2n = v('w' + w.num + '-g2n');
+      var g3s = v('w' + w.num + '-g3s'); var g3n = v('w' + w.num + '-g3n');
+
+      if (!date && !obs && !listen) return;
+
+      html += '<div class="out-week">';
+      html += '<div class="out-week-title">' + w.label;
+      if (date) html += ' &nbsp;|&nbsp; ' + date;
+      if (format) html += ' &nbsp;|&nbsp; ' + format;
+      html += '</div>';
+      if (listen) html += '<div class="out-field"><div class="out-label">L — Listen</div><div class="out-value">' + listen + '</div></div>';
+      if (empathize) html += '<div class="out-field"><div class="out-label">E — Empathize</div><div class="out-value">' + empathize + '</div></div>';
+      if (ask) html += '<div class="out-field"><div class="out-label">A — Ask</div><div class="out-value">' + ask + '</div></div>';
+      if (obs) html += '<div class="out-field"><div class="out-label">Observations</div><div class="out-value">' + obs + '</div></div>';
+      var goalText = '';
+      if (g1s) goalText += 'Goal 1: ' + g1s + (g1n ? ' — ' + g1n : '') + '\n';
+      if (g2s) goalText += 'Goal 2: ' + g2s + (g2n ? ' — ' + g2n : '') + '\n';
+      if (g3s) goalText += 'Goal 3: ' + g3s + (g3n ? ' — ' + g3n : '');
+      if (goalText.trim()) html += '<div class="out-field"><div class="out-label">Goal progress</div><div class="out-value">' + goalText.trim() + '</div></div>';
+      if (obstacles) html += '<div class="out-field"><div class="out-label">Employee obstacles</div><div class="out-value">' + obstacles + '</div></div>';
+      if (commit) html += '<div class="out-field"><div class="out-label">Manager follow-through</div><div class="out-value">' + commit + '</div></div>';
+      html += '</div>';
+
+      // Mini check output
+      if (miniCheckWeeks.indexOf(w.num) !== -1) {
+        var trend = getRadio('trend-' + w.num);
+        var change = v('mini-change-' + w.num);
+        var reassess = v('mini-reassess-' + w.num);
+        var hrNote = v('mini-hr-' + w.num);
+        var g1r = getRadio('g1-mini-' + w.num);
+        var g2r = getRadio('g2-mini-' + w.num);
+        var g3r = getRadio('g3-mini-' + w.num);
+        if (trend || change || reassess) {
+          html += '<div class="out-week" style="border-left:3px solid var(--gold);padding-left:.75rem;">';
+          html += '<div class="out-week-title" style="color:var(--gold)">2-Week Pulse Check — After Week ' + w.num + '</div>';
+          if (trend) html += '<div class="out-field"><div class="out-label">Overall trend</div><div class="out-value">' + trend.toUpperCase() + '</div></div>';
+          var gr = [g1r ? 'Goal 1: ' + g1r : '', g2r ? 'Goal 2: ' + g2r : '', g3r ? 'Goal 3: ' + g3r : ''].filter(Boolean).join('\n');
+          if (gr) html += '<div class="out-field"><div class="out-label">Goal ratings</div><div class="out-value">' + gr + '</div></div>';
+          if (change) html += '<div class="out-field"><div class="out-label">What needs to change</div><div class="out-value">' + change + '</div></div>';
+          if (reassess) html += '<div class="out-field"><div class="out-label">Reassess decision</div><div class="out-value">' + reassess + '</div></div>';
+          if (hrNote) html += '<div class="out-field"><div class="out-label">HR notes</div><div class="out-value">' + hrNote + '</div></div>';
+          html += '</div>';
+        }
+      }
+
+      // Full check output
+      if (fullCheckWeeks.indexOf(w.num) !== -1) {
+        var isFinal = fullCheckWeeks.indexOf(w.num) === fullCheckWeeks.length - 1;
+        var ftitle = isFinal ? 'Final Check + Reassess' : 'Mid-Point Check + Reassess';
+        var fcolor = isFinal ? 'var(--navy)' : 'var(--teal)';
+        var ftrend = getRadio('full-trend-' + w.num);
+        var fchanged = v('full-changed-' + w.num);
+        var flea = v('full-lea-' + w.num);
+        var frationale = v('full-rationale-' + w.num);
+        var fnext = v('full-next-' + w.num);
+        var fhr = v('full-hr-' + w.num);
+        var outcome = getRadio('outcome-' + w.num);
+        var fg1s = v('full-g1s-' + w.num); var fg1n = v('full-g1n-' + w.num);
+        var fg2s = v('full-g2s-' + w.num); var fg2n = v('full-g2n-' + w.num);
+        var fg3s = v('full-g3s-' + w.num); var fg3n = v('full-g3n-' + w.num);
+        if (ftrend || fchanged || frationale) {
+          html += '<div class="out-week" style="border-left:3px solid ' + fcolor + ';padding-left:.75rem;">';
+          html += '<div class="out-week-title" style="color:' + fcolor + '">' + ftitle + ' — After Week ' + w.num + '</div>';
+          if (ftrend) html += '<div class="out-field"><div class="out-label">Overall trend</div><div class="out-value">' + ftrend.toUpperCase() + '</div></div>';
+          var fgr = [fg1s ? 'Goal 1: ' + fg1s + (fg1n ? ' — ' + fg1n : '') : '', fg2s ? 'Goal 2: ' + fg2s + (fg2n ? ' — ' + fg2n : '') : '', fg3s ? 'Goal 3: ' + fg3s + (fg3n ? ' — ' + fg3n : '') : ''].filter(Boolean).join('\n');
+          if (fgr) html += '<div class="out-field"><div class="out-label">Goal progress</div><div class="out-value">' + fgr + '</div></div>';
+          if (fchanged) html += '<div class="out-field"><div class="out-label">What changed</div><div class="out-value">' + fchanged + '</div></div>';
+          if (flea) html += '<div class="out-field"><div class="out-label">LEA conversation insights</div><div class="out-value">' + flea + '</div></div>';
+          if (outcome) html += '<div class="out-field"><div class="out-label">Outcome decision</div><div class="out-value">' + outcome + '</div></div>';
+          if (frationale) html += '<div class="out-field"><div class="out-label">Rationale</div><div class="out-value">' + frationale + '</div></div>';
+          if (fnext) html += '<div class="out-field"><div class="out-label">Next steps</div><div class="out-value">' + fnext + '</div></div>';
+          if (fhr) html += '<div class="out-field"><div class="out-label">HR notes</div><div class="out-value">' + fhr + '</div></div>';
+          html += '</div>';
+        }
+      }
+    });
+
+    document.getElementById('output-body').innerHTML = html;
+    var panel = document.getElementById('output-panel');
+    panel.style.display = 'block';
+    setTimeout(function() { panel.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+  }
+</script>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#888780;border-top:1px solid #EEEDE9;margin-top:2rem">&copy; 2026 Cazzi Coleman. All rights reserved. This tool is shared for review purposes only and may not be reproduced, distributed, or resold without written permission. For review only &mdash; not for distribution.</div>
+</body>
+</html>
